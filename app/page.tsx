@@ -1,113 +1,217 @@
-import Image from "next/image";
+'use client'
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Button, Link, Card } from "@nextui-org/react";
+import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
+
+interface Dados {
+  c5y: number;
+  cotacao: number;
+  divbpatr: number;
+  dy: number;
+  evebit: number;
+  evebitda: number;
+  liq2m: number;
+  liqc: number;
+  mrgebit: number;
+  mrgliq: number;
+  pa: number;
+  pacl: number;
+  papel: string;
+  patrliq: number;
+  pcg: number;
+  pebit: number;
+  pl: number;
+  psr: number;
+  pvp: number;
+  roe: number;
+  roic: number;
+  total: number;
+  index: number;
+}
+
+function colTable() {
+  return [
+    { label: 'Posição', key: 'index' },
+    { label: 'Papel', key: 'papel' },
+    { label: 'Cotação', key: 'cotacao' },
+    { label: 'P/L', key: 'pl' },
+    { label: 'P/VP', key: 'pvp' },
+    { label: 'Div.Yield', key: 'dy' },
+    { label: 'ROE', key: 'roe' },
+    { label: 'Liq. 2 meses', key: 'liq2m' },
+    { label: 'Patrim. Liq.', key: 'patrliq' },
+    { label: 'Div. Bruto/Patrimonio', key: 'divbpatr' },
+    { label: 'Crescimento 5 Anos', key: 'c5y' },
+    { label: 'Pontuação', key: 'total' },
+  ];
+}
+
+function formataInteiroParaReal(numero:number) {
+  return numero.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+const linha = 5
 
 export default function Home() {
+  const [dadosBruto, setDadosBruto] = useState<Dados[] | null>(null);
+
+  const renderCell = useCallback((dados: Dados, columnKey: React.Key) => {
+    const cellValue = dados[columnKey as keyof Dados];
+
+    switch (columnKey) {
+      case "papel":
+        return (
+          <Link href={`https://fundamentus.com.br/detalhes.php?papel=${dados.papel}`} target="_blank">
+            <Button color="default">
+              {cellValue}
+            </Button>
+          </Link>
+        );
+      case "index":
+        return (
+          <span>
+            {dados.index}
+          </span>
+        );
+      default:
+        return (
+          <span>
+            {cellValue}
+          </span>
+        );
+    } 
+  }, []);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get<Dados[]>(`${process.env.NEXT_PUBLIC_NEXTURL_SERVER}/ativo`, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const data:any[] = response.data
+        data.forEach(acao => acao.total = 0);
+
+        data.sort((a, b) => b.roe - a.roe);
+        for (let i = 0; i < linha; i++) {
+          if (data[i]) {
+            data[i].total++;
+          }
+        }
+
+        data.sort((a, b) => a.pl - b.pl);
+        for (let i = 0; i < linha; i++) {
+          if (data[i]) {
+            data[i].total++;
+          }
+        }
+
+        data.sort((a, b) => a.pvp - b.pvp);
+        for (let i = 0; i < linha; i++) {
+          if (data[i]) {
+            data[i].total++;
+          }
+        }
+
+        data.sort((a, b) => a.divbpatr - b.divbpatr);
+        for (let i = 0; i < linha; i++) {
+          if (data[i]) {
+            data[i].total++;
+          }
+        }
+
+        data.sort((a, b) => b.dy - a.dy);
+        for (let i = 0; i < linha; i++) {
+          if (data[i]) {
+            data[i].total++;
+          }
+        }
+        data.sort((a, b) => b.total - a.total);
+
+        data.forEach((acao,index) => acao.index = index+1);
+
+        data.map((acoes:any) => {
+          
+          for (const key in acoes) {
+
+            if (typeof acoes[key] === 'number' && acoes[key].toString().includes('.')) {
+              acoes[key] = parseFloat(acoes[key].toFixed(4));
+            }
+
+            if(key === 'roe'){
+              acoes[key] = `${(acoes[key]*100).toFixed(4)}%`
+
+            }else if(key === 'dy'){
+              acoes[key] = `${(acoes[key]*100).toFixed(4)}%`
+ 
+            }else if(key === 'c5y'){
+              acoes[key] = `${(acoes[key]*100).toFixed(4)}%`
+            }
+
+            if(key === 'liq2m'){
+              acoes[key] = formataInteiroParaReal(acoes[key])
+              
+            }else if(key === 'patrliq'){
+              acoes[key] = formataInteiroParaReal(acoes[key])
+
+            }else if(key === 'cotacao'){
+              acoes[key] = formataInteiroParaReal(acoes[key])
+
+            }
+
+          }
+          return acoes;
+        });
+
+        setDadosBruto(data);
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+    <main className="flex min-h-screen flex-col items-center justify-between px-24 py-4">
+      {dadosBruto ? (
+        <Table aria-label="Ações" color="success" selectionMode="single" defaultSelectedKeys={["2"]} >
+          <TableHeader columns={colTable()}>
+            {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
+          </TableHeader>
+          <TableBody items={dadosBruto}>
+            {(item) => (
+              <TableRow key={item.papel} >
+                {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      ) : (
+        <p>Carregando...</p>
+      )}
+      <Table aria-label="Regras de Classificação">
+        <TableHeader>
+          <TableColumn>PL</TableColumn>
+          <TableColumn>P/VP</TableColumn>
+          <TableColumn>DY</TableColumn>
+          <TableColumn>ROE</TableColumn>
+          <TableColumn>LIQ. 2 MESES</TableColumn>
+          <TableColumn>CRESCIMENTO 5 ANOS</TableColumn>
+        </TableHeader>
+        <TableBody>
+          <TableRow key="1">
+            <TableCell>Quanto menor for o PL em relação aos parametros de filtros (Entre 3 e 10 )</TableCell>
+            <TableCell>Quanto menor for o P/VP em relação aos parametros de filtros (Entre 0,5 e 2 ) </TableCell>
+            <TableCell>Quanto maior for o DY em relação aos parametros de filtros (Entre 7% e 15%)</TableCell>
+            <TableCell>Quanto maior for o ROE em relação aos parametros de filtros (Entre 15% e 30%)</TableCell>
+            <TableCell>Quanto maior for o LIQUIDAÇÃO DE 2 MESES em relação aos parametros de filtros (MAIOR OU IGUAL A 1.000.000)</TableCell>
+            <TableCell>Quanto maior for o CRESCIMENTO 5 ANOS em relação aos parametros de filtros (MAIOR OU IGUAL A 10%)</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
     </main>
   );
 }
