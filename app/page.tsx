@@ -177,7 +177,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between px-24 py-4">
       {dadosBruto ? (
-        <Table aria-label="Ações" color="success" selectionMode="single" defaultSelectedKeys={["2"]} >
+        <Table aria-label="Ações" color="success" selectionMode="single" defaultSelectedKeys={["2"]} className="dark:bg-black" >
           <TableHeader columns={colTable()}>
             {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
           </TableHeader>
@@ -192,7 +192,7 @@ export default function Home() {
       ) : (
         <p>Carregando...</p>
       )}
-      <Table aria-label="Regras de Classificação">
+      <Table aria-label="Regras de Classificação" className="dark:bg-black">
         <TableHeader>
           <TableColumn>PL</TableColumn>
           <TableColumn>P/VP</TableColumn>
