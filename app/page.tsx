@@ -175,7 +175,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between px-24 py-4">
+    <main className="flex min-h-screen flex-col items-center justify-between px-24 py-4 dark text-foreground bg-background">
       {dadosBruto ? (
         <Table aria-label="Ações" color="success" selectionMode="single" defaultSelectedKeys={["2"]} className="dark:bg-black" >
           <TableHeader columns={colTable()}>
