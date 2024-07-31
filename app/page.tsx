@@ -61,7 +61,7 @@ export default function Home() {
     switch (columnKey) {
       case "index":
         return (
-          <Link href={`https://fundamentus.com.br/detalhes.php?index=${dados.index}`} target="_blank">
+          <Link href={`https://fundamentus.com.br/detalhes.php?papel=${dados.index}`} target="_blank">
             <Button color="default">
               {cellValue}
             </Button>
