@@ -16,7 +16,7 @@ interface Dados {
   mrgliq: number;
   pa: number;
   pacl: number;
-  papel: string;
+  index: string;
   patrliq: number;
   pcg: number;
   pebit: number;
@@ -26,13 +26,13 @@ interface Dados {
   roe: number;
   roic: number;
   total: number;
-  index: number;
+  indexPos: number;
 }
 
 function colTable() {
   return [
-    { label: 'Posição', key: 'index' },
-    { label: 'Papel', key: 'papel' },
+    { label: 'Posição', key: 'indexPos' },
+    { label: 'index', key: 'index' },
     { label: 'Cotação', key: 'cotacao' },
     { label: 'P/L', key: 'pl' },
     { label: 'P/VP', key: 'pvp' },
@@ -59,18 +59,18 @@ export default function Home() {
     const cellValue = dados[columnKey as keyof Dados];
 
     switch (columnKey) {
-      case "papel":
+      case "index":
         return (
-          <Link href={`https://fundamentus.com.br/detalhes.php?papel=${dados.papel}`} target="_blank">
+          <Link href={`https://fundamentus.com.br/detalhes.php?index=${dados.index}`} target="_blank">
             <Button color="default">
               {cellValue}
             </Button>
           </Link>
         );
-      case "index":
+      case "indexPos":
         return (
           <span>
-            {dados.index}
+            {dados.indexPos}
           </span>
         );
       default:
@@ -131,7 +131,7 @@ export default function Home() {
         }
         data.sort((a, b) => b.total - a.total);
 
-        data.forEach((acao,index) => acao.index = index+1);
+        data.forEach((acao,indexPos) => acao.indexPos = indexPos+1);
 
         data.map((acoes:any) => {
           
@@ -183,7 +183,7 @@ export default function Home() {
           </TableHeader>
           <TableBody items={dadosBruto}>
             {(item) => (
-              <TableRow key={item.papel} >
+              <TableRow key={item.index} >
                 {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
               </TableRow>
             )}
